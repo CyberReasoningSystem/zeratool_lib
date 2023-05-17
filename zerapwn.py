@@ -34,10 +34,16 @@ loud_loggers = [
 log = logging.getLogger(__name__)
 
 
+class WinFunction:
+    name: str
+    address: int
+
+
 # TODO (@iosifache): Return the exploit
 def exploit(
     file: str,
     libc: str,
+    win_functions: list(WinFunction),
     verbose: bool = False,
     force_shellcode: bool = False,
     force_dlresolve: bool = False,
@@ -73,9 +79,7 @@ def exploit(
     log.info("[+] Checking pwn type...")
 
     # Is there an easy win function
-    properties["win_functions"] = []
-    if not no_win:
-        properties["win_functions"] = winFunctionDetector.getWinFunctions(file)
+    properties["win_functions"] = win_functions if win_functions else []
 
     if not format_only and not skip_check:
         log.info("[+] Checking for overflow pwn type...")
