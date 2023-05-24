@@ -12,9 +12,7 @@ from zeratool import (
     overflowDetector,
     overflowExploiter,
     overflowExploitSender,
-    overflowRemoteLeaker,
     protectionDetector,
-    winFunctionDetector,
 )
 
 logging.basicConfig()
@@ -48,7 +46,6 @@ def exploit(
     force_shellcode: bool = False,
     force_dlresolve: bool = False,
     skip_check: bool = False,
-    no_win: bool = False,
     format_only: bool = False,
     overflow_only: bool = False,
 ) -> None:

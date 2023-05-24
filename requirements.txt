@@ -1,7 +1,7 @@
 angr
-r2pipe
 claripy
 IPython
-timeout_decorator
 pwntools
+r2pipe
+timeout_decorator
 tqdm
