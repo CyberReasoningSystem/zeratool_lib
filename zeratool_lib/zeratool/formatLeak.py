@@ -123,7 +123,7 @@ def checkLeak(binary_name, properties, leak_format) -> bytes:
 
         # Dumb check for finding flag
         if re.match(leak_format, full_string):
-            print("[+] Flag found:")
+            print("[+] Leak format matched:")
             print(f"[+] Returned {full_string}")
 
             return input_string

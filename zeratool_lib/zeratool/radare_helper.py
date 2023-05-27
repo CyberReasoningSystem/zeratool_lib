@@ -79,4 +79,3 @@ def findShellcode(filename, endAddr, shellcode, commandInput):
         os.remove("temp.env")
 
     return loc[0]
-    return loc[0]

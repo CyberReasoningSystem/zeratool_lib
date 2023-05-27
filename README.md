@@ -20,11 +20,11 @@ Install the required Python 3 packages via `poetry install --no-dev`.
 ## Usage
 
 ```python
-from zeratool_lib import exploit, SupportedInputStreams
+from zeratool_lib import exploit, ZeratoolInputStreams
 
 payload, outcome = exploit(
     "key-manager.elf",
-    input_stream=SupportedInputStreams.STDIN,
+    input_stream=ZeratoolInputStreams.STDIN,
     overflow_only=True,
     win_functions=["get_private_key"],
     leak_format="(.*)BEGIN PRIVATE KEY(.*)"

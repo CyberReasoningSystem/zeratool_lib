@@ -4,6 +4,7 @@ from __future__ import print_function
 import logging
 import os
 import subprocess
+from dataclasses import dataclass
 from enum import Enum
 
 from zeratool import (
@@ -34,31 +35,60 @@ loud_loggers = [
 log = logging.getLogger(__name__)
 
 
-def get_libc_path() -> str:
-    return subprocess.check_output(["gcc", "--print-file-name=libc.so"]).decode("utf-8")
-
-
-class SupportedInputStreams(Enum):
+class ZeratoolInputStreams(Enum):
     STDIN = "STDIN"
     ARGUMENTS = "ARG"
 
 
-class WinFunction:
-    name: str
-    address: int
+@dataclass
+class ZeratoolExploit:
+    class Outcomes(Enum):
+        SHELL = "SHELL"
+        CALL_TO_WIN = "CALL_TO_WIN"
+        LEAK = "LEAK"
+
+    payload: bytes
+    outcome: Outcomes
+
+
+def _get_libc_path() -> str:
+    return subprocess.check_output(["gcc", "--print-file-name=libc.so"]).decode("utf-8")
 
 
 def exploit(
     file: str,
-    input_stream: SupportedInputStreams,
+    input_stream: ZeratoolInputStreams,
     format_only: bool = False,
     overflow_only: bool = False,
-    win_funcs: list(WinFunction) = None,
+    win_funcs: list(str) = None,
     leak_format: str = "",
     skip_check: bool = False,
     force_shellcode: bool = False,
     force_dlresolve: bool = False,
-) -> None:
+) -> ZeratoolExploit:
+    """Exploits a binary.
+
+    Args:
+        file (str): Path to the ELF file to be exploited
+        input_stream (ZeratoolInputStreams): Stream to send input to
+        format_only (bool, optional): Exploit only with format string attacks. Defaults
+            to False.
+        overflow_only (bool, optional): Exploit only with overflow attacks. Defaults to
+            False.
+        win_funcs (list, optional): Names of win functions If specified, then ROP and
+            shellcode attacks will not be performed. Defaults to None.
+        leak_format (str, optional): Format that a valid memory leak should respect.
+            Defaults to "".
+        skip_check (bool, optional): Skip all checks of the vulnerability. Defaults to
+            False.
+        force_shellcode (bool, optional): Force the exploit to use shellcodes. Defaults
+            to False.
+        force_dlresolve (bool, optional): Force the exploit to use dlresolve. Defaults
+            to False.
+
+    Returns:
+        ZeratoolExploit: Generated exploit
+    """
     if file is None:
         log.info("[-] Exitting no file specified")
         exit(1)
@@ -73,7 +103,7 @@ def exploit(
     properties = {}
     properties["file"] = file
     properties["input_type"] = input_stream.value
-    properties["libc"] = get_libc_path()
+    properties["libc"] = _get_libc_path()
     properties["force_shellcode"] = force_shellcode
     properties["pwn_type"] = {}
     properties["pwn_type"]["type"] = None
@@ -85,6 +115,8 @@ def exploit(
     )
 
     log.info("[+] Checking pwn type...")
+
+    exploit = None
 
     # Checking if overflow attack is possible
     if not format_only and not skip_check:
@@ -111,13 +143,13 @@ def exploit(
     log.info("[+] Getting binary protections")
     properties["protections"] = protectionDetector.getProperties(file)
 
-    # Leak the flag with format string attacks
+    # Leak memory with format string attacks
     if properties["pwn_type"]["type"] == "Format":
-        log.info("[+] Checking for flag leak")
+        log.info("[+] Checking for memory leak")
         payload = formatLeak.checkLeak(file, properties, leak_format)
 
         if payload:
-            return payload, "leak"
+            exploit = (payload, "LEAK")
 
     # Exploit with overflow attack
     if properties["pwn_type"]["type"] == "Overflow":
@@ -130,16 +162,25 @@ def exploit(
         if properties["pwn_type"]["results"]["type"]:
             payload = overflowExploitSender.sendExploit(file, properties)
 
-            return payload, "shell"
+            if payload:
+                exploit = (payload, "CALL_TO_WIN" if win_funcs else "SHELL")
 
     # Exploit with overflow attack for function
     elif properties["pwn_type"]["type"] == "overflow_variable":
         properties["pwn_type"]["results"] = properties["pwn_type"]
-        properties["send_results"] = overflowExploitSender.sendExploit(file, properties)
+        payload = overflowExploitSender.sendExploit(file, properties)
+
+        if payload:
+            exploit = (payload, "CALL_TO_WIN" if win_funcs else "SHELL")
 
     # Exploit with format string attack
     elif properties["pwn_type"]["type"] == "Format":
-        return formatExploiter.exploitFormat(file, properties, leak_format)
+        exploit = formatExploiter.exploitFormat(file, properties, leak_format)
 
     else:
         log.info("[-] Can not determine vulnerable type")
+
+    if exploit:
+        return ZeratoolExploit(exploit[0], ZeratoolExploit.Outcomes(exploit[1]))
+    else:
+        return None
