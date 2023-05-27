@@ -4,12 +4,12 @@ from __future__ import print_function
 import logging
 import os
 import subprocess
+from enum import Enum, auto
 
 from zeratool import (
     formatDetector,
     formatExploiter,
     formatLeak,
-    inputDetector,
     overflowDetector,
     overflowExploiter,
     overflowExploitSender,
@@ -37,6 +37,10 @@ def get_libc_path() -> str:
     return subprocess.check_output(["gcc", "--print-file-name=libc.so"]).decode("utf-8")
 
 
+class SupportedInputStreams(Enum):
+    STDIN = "STDIN"
+    ARGUMENTS = "ARG"
+
 class WinFunction:
     name: str
     address: int
@@ -44,6 +48,7 @@ class WinFunction:
 
 def exploit(
     file: str,
+    input_stream: SupportedInputStreams,
     format_only: bool = False,
     overflow_only: bool = False,
     win_functions: list(WinFunction) = None,
@@ -65,7 +70,7 @@ def exploit(
 
     properties = {}
     properties["file"] = file
-    properties["input_type"] = inputDetector.checkInputType(file)
+    properties["input_type"] = input_stream.value
     properties["libc"] = get_libc_path()
     properties["force_shellcode"] = force_shellcode
     properties["pwn_type"] = {}
