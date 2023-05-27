@@ -3,7 +3,7 @@ name = "zeratool-lib"
 version = "0.1.0"
 description = "Fork of Zeratool for exploiting executables on the local machine"
 authors = ["George-Andrei Iosif <hi@iosifache.me>"]
-license = "MIT"
+license = "GNU General Public License v3.0"
 readme = "README.md"
 packages = [{include = "zeratool_lib"}]
 
