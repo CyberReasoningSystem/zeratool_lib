@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import logging
 import os
+import subprocess
 
 from zeratool import (
     formatDetector,
@@ -32,6 +33,10 @@ loud_loggers = [
 log = logging.getLogger(__name__)
 
 
+def get_libc_path() -> str:
+    return subprocess.check_output(["gcc", "--print-file-name=libc.so"]).decode("utf-8")
+
+
 class WinFunction:
     name: str
     address: int
@@ -40,25 +45,18 @@ class WinFunction:
 # TODO (@iosifache): Return the exploit
 def exploit(
     file: str,
-    libc: str,
-    win_functions: list(WinFunction),
-    verbose: bool = False,
-    force_shellcode: bool = False,
-    force_dlresolve: bool = False,
-    skip_check: bool = False,
     format_only: bool = False,
     overflow_only: bool = False,
+    win_functions: list(WinFunction) = [],
+    skip_check: bool = False,
+    force_shellcode: bool = False,
+    force_dlresolve: bool = False,
 ) -> None:
     if file is None:
         log.info("[-] Exitting no file specified")
         exit(1)
 
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        for loud_logger in loud_loggers:
-            logging.getLogger(loud_logger).setLevel(logging.ERROR)
-            logging.getLogger("angr.project").disabled = True
+    logging.basicConfig(level=logging.DEBUG)
 
     # For stack problems where env gets shifted
     # based on path, using the abs path everywhere
@@ -68,21 +66,23 @@ def exploit(
     properties = {}
     properties["file"] = file
     properties["input_type"] = inputDetector.checkInputType(file)
-    properties["libc"] = libc
+    properties["libc"] = get_libc_path()
     properties["force_shellcode"] = force_shellcode
     properties["pwn_type"] = {}
     properties["pwn_type"]["type"] = None
     properties["force_dlresolve"] = force_dlresolve
-    log.info("[+] Checking pwn type...")
-
-    # Is there an easy win function
     properties["win_functions"] = win_functions if win_functions else []
 
+    log.info("[+] Checking pwn type...")
+
+    # Checking if overflow attack is possible
     if not format_only and not skip_check:
         log.info("[+] Checking for overflow pwn type...")
         properties["pwn_type"] = overflowDetector.checkOverflow(
             file, inputType=properties["input_type"]
         )
+
+    # Checking if format attack is possible
     if not overflow_only and not skip_check:
         if properties["pwn_type"]["type"] is None:
             log.info("[+] Checking for format string pwn type...")
@@ -90,23 +90,24 @@ def exploit(
                 file, inputType=properties["input_type"]
             )
 
+    # Set the exploitation type
     if skip_check and overflow_only:
         properties["pwn_type"]["type"] = "Overflow"
     if skip_check and format_only:
         properties["pwn_type"]["type"] = "Format"
 
-    # Get problem mitigations
+    # Get mitigations
     log.info("[+] Getting binary protections")
     properties["protections"] = protectionDetector.getProperties(file)
 
-    # Is it a leak based one?
+    # Leak the flag with format string attacks
     if properties["pwn_type"]["type"] == "Format":
         log.info("[+] Checking for flag leak")
         properties["pwn"] = formatLeak.checkLeak(file, properties)
         if properties["pwn"]["flag_found"]:
             exit(0)
 
-    # Exploit overflows
+    # Exploit with overflow attack
     if properties["pwn_type"]["type"] == "Overflow":
         log.info("[+] Exploiting overflow")
 
@@ -119,10 +120,12 @@ def exploit(
                 file, properties
             )
 
+    # Exploit with overflow attack for function
     elif properties["pwn_type"]["type"] == "overflow_variable":
         properties["pwn_type"]["results"] = properties["pwn_type"]
         properties["send_results"] = overflowExploitSender.sendExploit(file, properties)
 
+    # Exploit with format string attack
     elif properties["pwn_type"]["type"] == "Format":
         properties["pwn_type"]["results"] = formatExploiter.exploitFormat(
             file, properties
