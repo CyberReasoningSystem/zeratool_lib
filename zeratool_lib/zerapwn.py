@@ -4,7 +4,7 @@ from __future__ import print_function
 import logging
 import os
 import subprocess
-from enum import Enum, auto
+from enum import Enum
 
 from zeratool import (
     formatDetector,
