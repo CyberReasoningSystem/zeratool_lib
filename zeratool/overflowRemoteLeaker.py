@@ -6,7 +6,6 @@ import angr
 import claripy
 import timeout_decorator
 from angr import sim_options as so
-
 from zeratool import puts_model
 
 log = logging.getLogger(__name__)
@@ -23,7 +22,7 @@ from .simgr_helper import (
 )
 
 
-def leak_remote_functions(binary_name, properties, inputType="STDIN"):
+def leak_remote_functions(binary_name, properties, inputType):
 
     run_environ = properties["pwn_type"].get("results", {})
     run_environ["type"] = run_environ.get("type", None)

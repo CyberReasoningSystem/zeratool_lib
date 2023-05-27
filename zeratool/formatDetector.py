@@ -11,7 +11,7 @@ from zeratool import printf_model
 log = logging.getLogger(__name__)
 
 
-def checkFormat(binary_name, inputType="STDIN"):
+def checkFormat(binary_name, inputType):
 
     p = angr.Project(binary_name, load_options={"auto_load_libs": False})
 

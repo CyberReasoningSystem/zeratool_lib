@@ -12,7 +12,7 @@ from .simgr_helper import hook_four, hook_win, overflow_detect_filter
 log = logging.getLogger(__name__)
 
 
-def checkOverflow(binary_name, inputType="STDIN"):
+def checkOverflow(binary_name, inputType):
 
     extras = {
         so.REVERSE_MEMORY_NAME_MAP,
