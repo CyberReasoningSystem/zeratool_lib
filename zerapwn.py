@@ -42,12 +42,12 @@ class WinFunction:
     address: int
 
 
-# TODO (@iosifache): Return the exploit
 def exploit(
     file: str,
     format_only: bool = False,
     overflow_only: bool = False,
-    win_functions: list(WinFunction) = [],
+    win_functions: list(WinFunction) = None,
+    leak_format: str = "",
     skip_check: bool = False,
     force_shellcode: bool = False,
     force_dlresolve: bool = False,
@@ -103,9 +103,10 @@ def exploit(
     # Leak the flag with format string attacks
     if properties["pwn_type"]["type"] == "Format":
         log.info("[+] Checking for flag leak")
-        properties["pwn"] = formatLeak.checkLeak(file, properties)
-        if properties["pwn"]["flag_found"]:
-            exit(0)
+        created_exploit = formatLeak.checkLeak(file, properties, leak_format)
+
+        if created_exploit:
+            return created_exploit
 
     # Exploit with overflow attack
     if properties["pwn_type"]["type"] == "Overflow":

