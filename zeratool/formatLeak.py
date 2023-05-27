@@ -1,7 +1,6 @@
 import binascii
 import re
 import string
-import typing
 
 from pwn import *
 

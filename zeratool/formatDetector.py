@@ -1,10 +1,8 @@
 import logging
-import time
 
 import angr
 import claripy
 import timeout_decorator
-import tqdm
 from angr import sim_options as so
 from zeratool import printf_model
 

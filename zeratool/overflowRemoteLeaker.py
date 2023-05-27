@@ -1,6 +1,5 @@
 import logging
 import os
-from struct import pack
 
 import angr
 import claripy

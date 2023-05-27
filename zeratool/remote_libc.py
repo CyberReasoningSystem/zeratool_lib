@@ -1,6 +1,7 @@
-import requests
 import json
 import logging
+
+import requests
 
 log = logging.getLogger(__name__)
 
@@ -29,4 +30,5 @@ def get_remote_libc_with_leaks(symbols):
     resp_dict = json.loads(resp.content)
     log.info("Matched {} possible libc".format(len(resp_dict)))
 
+    return resp_dict
     return resp_dict

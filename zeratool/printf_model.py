@@ -1,10 +1,12 @@
-from pwn import *
+import copy
+import logging
+
 import angr
 import claripy
 import tqdm
+from pwn import *
+
 from .simgr_helper import get_trimmed_input
-import logging
-import copy
 
 log = logging.getLogger(__name__)
 
@@ -342,5 +344,7 @@ class printf_leak_detect(angr.procedures.libc.printf.printf):
             return super(type(self), self).run(fmt)
 
         va_args_copy.check_for_leak(fmt)
+
+        return super(type(self), self).run(fmt)
 
         return super(type(self), self).run(fmt)

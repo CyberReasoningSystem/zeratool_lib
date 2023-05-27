@@ -1,6 +1,7 @@
-import r2pipe
 import json
 import logging
+
+import r2pipe
 
 log = logging.getLogger(__name__)
 
@@ -47,4 +48,5 @@ def getWinFunctions(binary_name):
     for k, v in list(winFunctions.items()):
         log.info("[+] Found win function {}".format(k))
 
+    return winFunctions
     return winFunctions

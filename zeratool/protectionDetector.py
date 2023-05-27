@@ -1,5 +1,6 @@
-from pwn import *
 import logging
+
+from pwn import *
 
 log = logging.getLogger(__name__)
 
@@ -17,4 +18,5 @@ def getProperties(binary_name):
     properties["plt"] = binary.plt
     properties["relro"] = binary.relro
 
+    return properties
     return properties

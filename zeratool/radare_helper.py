@@ -1,7 +1,8 @@
-import r2pipe
 import json
-import os
 import logging
+import os
+
+import r2pipe
 
 log = logging.getLogger(__name__)
 
@@ -77,4 +78,5 @@ def findShellcode(filename, endAddr, shellcode, commandInput):
     if os.path.exists("temp.env"):
         os.remove("temp.env")
 
+    return loc[0]
     return loc[0]

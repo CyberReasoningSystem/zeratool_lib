@@ -1,9 +1,11 @@
+import logging
+
+import angr
 import claripy
+from pwn import *
+
 from .radare_helper import findShellcode
 from .remote_libc import get_remote_libc_with_leaks
-import angr
-from pwn import *
-import logging
 
 logging.getLogger("pwnlib.elf.elf").disabled = True
 
@@ -1147,5 +1149,7 @@ class hook_win(angr.SimProcedure):
 class hook_four(angr.SimProcedure):
     IS_FUNCTION = True
 
+    def run(self):
+        return 4  # Fair dice roll
     def run(self):
         return 4  # Fair dice roll
