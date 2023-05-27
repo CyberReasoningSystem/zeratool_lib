@@ -14,6 +14,7 @@ from zeratool import (
     overflowExploiter,
     overflowExploitSender,
     protectionDetector,
+    win_functions,
 )
 
 logging.basicConfig()
@@ -41,6 +42,7 @@ class SupportedInputStreams(Enum):
     STDIN = "STDIN"
     ARGUMENTS = "ARG"
 
+
 class WinFunction:
     name: str
     address: int
@@ -51,7 +53,7 @@ def exploit(
     input_stream: SupportedInputStreams,
     format_only: bool = False,
     overflow_only: bool = False,
-    win_functions: list(WinFunction) = None,
+    win_funcs: list(WinFunction) = None,
     leak_format: str = "",
     skip_check: bool = False,
     force_shellcode: bool = False,
@@ -76,7 +78,11 @@ def exploit(
     properties["pwn_type"] = {}
     properties["pwn_type"]["type"] = None
     properties["force_dlresolve"] = force_dlresolve
-    properties["win_functions"] = win_functions if win_functions else []
+    properties["win_functions"] = (
+        win_functions.translate_win_names_to_refs(file, win_funcs)
+        if win_functions
+        else []
+    )
 
     log.info("[+] Checking pwn type...")
 
@@ -133,8 +139,7 @@ def exploit(
 
     # Exploit with format string attack
     elif properties["pwn_type"]["type"] == "Format":
-        return properties["pwn_type"][
-            "results"
-        ] = formatExploiter.exploitFormat(file, properties, leak_format)
+        return formatExploiter.exploitFormat(file, properties, leak_format)
+
     else:
         log.info("[-] Can not determine vulnerable type")
