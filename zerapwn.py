@@ -103,10 +103,10 @@ def exploit(
     # Leak the flag with format string attacks
     if properties["pwn_type"]["type"] == "Format":
         log.info("[+] Checking for flag leak")
-        created_exploit = formatLeak.checkLeak(file, properties, leak_format)
+        payload = formatLeak.checkLeak(file, properties, leak_format)
 
-        if created_exploit:
-            return created_exploit
+        if payload:
+            return payload
 
     # Exploit with overflow attack
     if properties["pwn_type"]["type"] == "Overflow":
@@ -117,9 +117,9 @@ def exploit(
             file, properties, inputType=properties["input_type"]
         )
         if properties["pwn_type"]["results"]["type"]:
-            properties["send_results"] = overflowExploitSender.sendExploit(
-                file, properties
-            )
+            payload = overflowExploitSender.sendExploit(file, properties)
+
+            return payload
 
     # Exploit with overflow attack for function
     elif properties["pwn_type"]["type"] == "overflow_variable":
