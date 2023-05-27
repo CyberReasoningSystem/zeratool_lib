@@ -3,16 +3,9 @@ import IPython
 
 stdin = "STDIN"
 arg = "ARG"
-libpwnable = "LIBPWNABLE"
 
 
 def checkInputType(binary_name):
-
-    # Check for libpwnableharness
-    p = angr.Project(binary_name)
-    if any(["libpwnable" in str(x.binary) for x in p.loader.all_elf_objects]):
-        return libpwnable
-
     p = angr.Project(binary_name, load_options={"auto_load_libs": False})
 
     #    CFG = p.analyses.CFGFast()

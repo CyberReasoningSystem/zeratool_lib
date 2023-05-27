@@ -1,24 +1,26 @@
+import logging
+import os
+from struct import pack
+
 import angr
 import claripy
 import timeout_decorator
-import os
-from struct import pack
 from angr import sim_options as so
+
 from zeratool import puts_model
-import logging
 
 log = logging.getLogger(__name__)
 
 # from pwn import *
 
+from .radare_helper import findShellcode, get_base_addr, getRegValues
 from .simgr_helper import (
-    point_to_win_filter,
-    point_to_shellcode_filter,
-    point_to_ropchain_filter,
-    leak_remote_libc_functions,
     hook_four,
+    leak_remote_libc_functions,
+    point_to_ropchain_filter,
+    point_to_shellcode_filter,
+    point_to_win_filter,
 )
-from .radare_helper import getRegValues, findShellcode, get_base_addr
 
 
 def leak_remote_functions(binary_name, properties, inputType="STDIN"):
@@ -50,27 +52,6 @@ def leak_remote_functions(binary_name, properties, inputType="STDIN"):
             add_options=extras,
             stdin=input_arg,
             env=os.environ,
-        )
-
-        # Just set the registers
-        register_names = list(state.arch.register_names.values())
-        for register in register_names:
-            if register in reg_values:  # Didn't use the register
-                state.registers.store(register, reg_values[register])
-
-    elif inputType == "LIBPWNABLE":
-
-        handle_connection = p.loader.main_object.get_symbol("handle_connection")
-        start_addr = handle_connection.rebased_addr
-
-        reg_values = getRegValues(binary_name, start_addr)
-
-        state = p.factory.entry_state(
-            args=argv,
-            env=os.environ,
-            addr=start_addr,
-            add_options=extras,
-            stdin=input_arg,
         )
 
         # Just set the registers

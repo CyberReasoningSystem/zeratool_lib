@@ -22,10 +22,7 @@ def checkLeak(binary_name, properties, leak_format) -> bytes:
     for i in range(int(run_count / format_count) + 1):
         input_string = base_input_string
 
-        if (
-            properties["input_type"] == "STDIN"
-            or properties["input_type"] == "LIBPWNABLE"
-        ):
+        if properties["input_type"] == "STDIN":
             # Create a local process
             proc = process(binary_name)
 

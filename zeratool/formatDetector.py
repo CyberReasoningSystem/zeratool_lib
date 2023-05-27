@@ -1,11 +1,12 @@
-import angr
-from angr import sim_options as so
-import claripy
+import logging
 import time
+
+import angr
+import claripy
 import timeout_decorator
 import tqdm
+from angr import sim_options as so
 from zeratool import printf_model
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -36,13 +37,6 @@ def checkFormat(binary_name, inputType="STDIN"):
         state = p.factory.full_init_state(
             args=argv,
             stdin=input_arg,
-            add_options=extras,
-        )
-        state.globals["user_input"] = input_arg
-    elif inputType == "LIBPWNABLE":
-        handle_connection = p.loader.main_object.get_symbol("handle_connection")
-        state = p.factory.entry_state(
-            addr=handle_connection.rebased_addr,
             add_options=extras,
         )
         state.globals["user_input"] = input_arg

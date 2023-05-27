@@ -1,11 +1,13 @@
-import angr
-from angr import sim_options as so
-import claripy
-import time
-import timeout_decorator
-import IPython
-from .simgr_helper import overflow_detect_filter, hook_win, hook_four
 import logging
+import time
+
+import angr
+import claripy
+import IPython
+import timeout_decorator
+from angr import sim_options as so
+
+from .simgr_helper import hook_four, hook_win, overflow_detect_filter
 
 log = logging.getLogger(__name__)
 
@@ -32,12 +34,6 @@ def checkOverflow(binary_name, inputType="STDIN"):
     input_arg = claripy.BVS("input", 300 * 8)
     if inputType == "STDIN":
         state = p.factory.full_init_state(args=argv, stdin=input_arg)
-        state.globals["user_input"] = input_arg
-    elif inputType == "LIBPWNABLE":
-        handle_connection = p.loader.main_object.get_symbol("handle_connection")
-        state = p.factory.entry_state(
-            addr=handle_connection.rebased_addr, stdin=input_arg, add_options=extras
-        )
         state.globals["user_input"] = input_arg
     else:
         argv.append(input_arg)
@@ -70,5 +66,7 @@ def checkOverflow(binary_name, inputType="STDIN"):
 
     if "input" in run_environ.keys() or run_environ["type"] == "overflow_variable":
         run_environ["input"] = end_state.globals["input"]
+        log.info("[+] Triggerable with input : {}".format(end_state.globals["input"]))
+    return run_environ
         log.info("[+] Triggerable with input : {}".format(end_state.globals["input"]))
     return run_environ
