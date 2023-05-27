@@ -106,7 +106,7 @@ def exploit(
         payload = formatLeak.checkLeak(file, properties, leak_format)
 
         if payload:
-            return payload
+            return payload, "leak"
 
     # Exploit with overflow attack
     if properties["pwn_type"]["type"] == "Overflow":
@@ -119,7 +119,7 @@ def exploit(
         if properties["pwn_type"]["results"]["type"]:
             payload = overflowExploitSender.sendExploit(file, properties)
 
-            return payload
+            return payload, "shell"
 
     # Exploit with overflow attack for function
     elif properties["pwn_type"]["type"] == "overflow_variable":
@@ -128,8 +128,8 @@ def exploit(
 
     # Exploit with format string attack
     elif properties["pwn_type"]["type"] == "Format":
-        properties["pwn_type"]["results"] = formatExploiter.exploitFormat(
-            file, properties
-        )
+        return properties["pwn_type"][
+            "results"
+        ] = formatExploiter.exploitFormat(file, properties, leak_format)
     else:
         log.info("[-] Can not determine vulnerable type")

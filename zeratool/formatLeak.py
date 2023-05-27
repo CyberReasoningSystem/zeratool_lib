@@ -95,7 +95,7 @@ def checkLeak(binary_name, properties, leak_format) -> bytes:
                     b"_%x", b"_%{}$".format(iter_num) + format_specifier, 1
                 ).rstrip("\x00")
 
-            # Create local or remote process
+            # Create local process
             proc = process([binary_name, input_string])
 
             # print("[+] Sending input {}".format(input_string))
