@@ -5,7 +5,7 @@
 #ifdef win_func
 void get_secret()
 {
-    puts("flag{you_did_it}");
+    puts("---BEGIN PRIVATE KEY---");
 }
 #endif
 

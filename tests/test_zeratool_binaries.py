@@ -19,7 +19,7 @@ def test_bof_with_nx() -> None:
         "zeratool_binaries/bin/bof_nx_32.elf",
         input_stream=ZeratoolInputStreams.STDIN,
         overflow_only=False,
-        leak_format=b"{.*}",
+        leak_format=b"(.*)BEGIN PRIVATE KEY(.*)",
         skip_check=True,
     )
 
@@ -33,7 +33,7 @@ def test_bof_with_win_function() -> None:
         input_stream=ZeratoolInputStreams.STDIN,
         overflow_only=True,
         win_funcs=["get_secret"],
-        leak_format=b"{.*}",
+        leak_format=b"(.*)BEGIN PRIVATE KEY(.*)",
         skip_check=True,
     )
 
