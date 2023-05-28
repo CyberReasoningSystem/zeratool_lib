@@ -5,8 +5,7 @@ import angr
 import claripy
 import tqdm
 from pwn import *
-
-from .simgr_helper import get_trimmed_input
+from simgr_helper import get_trimmed_input
 
 log = logging.getLogger(__name__)
 

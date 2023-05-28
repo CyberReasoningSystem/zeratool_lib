@@ -11,8 +11,8 @@ log = logging.getLogger(__name__)
 
 # from pwn import *
 
-from .radare_helper import findShellcode, get_base_addr, getRegValues
-from .simgr_helper import (
+from radare_helper import findShellcode, get_base_addr, getRegValues
+from simgr_helper import (
     hook_four,
     leak_remote_libc_functions,
     point_to_ropchain_filter,

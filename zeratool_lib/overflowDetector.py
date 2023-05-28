@@ -6,8 +6,7 @@ import claripy
 import IPython
 import timeout_decorator
 from angr import sim_options as so
-
-from .simgr_helper import hook_four, hook_win, overflow_detect_filter
+from simgr_helper import hook_four, hook_win, overflow_detect_filter
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +65,5 @@ def checkOverflow(binary_name, inputType):
 
     if "input" in run_environ.keys() or run_environ["type"] == "overflow_variable":
         run_environ["input"] = end_state.globals["input"]
-        log.info("[+] Triggerable with input : {}".format(end_state.globals["input"]))
-    return run_environ
         log.info("[+] Triggerable with input : {}".format(end_state.globals["input"]))
     return run_environ
