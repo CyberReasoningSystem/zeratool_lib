@@ -3,9 +3,9 @@ import os
 
 import angr
 import claripy
+import puts_model
 import timeout_decorator
 from angr import sim_options as so
-from zeratool import puts_model
 
 log = logging.getLogger(__name__)
 

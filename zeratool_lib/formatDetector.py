@@ -2,9 +2,9 @@ import logging
 
 import angr
 import claripy
+import printf_model
 import timeout_decorator
 from angr import sim_options as so
-from zeratool import printf_model
 
 log = logging.getLogger(__name__)
 
