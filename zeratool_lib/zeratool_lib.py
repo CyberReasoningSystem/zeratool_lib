@@ -34,6 +34,8 @@ log = logging.getLogger(__name__)
 
 
 class ZeratoolInputStreams(Enum):
+    """Sync names with commons.input_streams.InputStreams."""
+
     STDIN = "STDIN"
     ARGUMENTS = "ARG"
 
