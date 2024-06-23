@@ -56,11 +56,11 @@ def checkFormat(binary_name, inputType):
     # Lame way to do a timeout
     try:
 
-        @timeout_decorator.timeout(1200)
+        @timeout_decorator.timeout(1200, use_signals=False)
         def exploreBinary(simgr):
-            simgr.explore(find=lambda s: "type" in s.globals)
+            return simgr.explore(find=lambda s: "type" in s.globals)
 
-        exploreBinary(simgr)
+        simgr = exploreBinary(simgr)
         if "found" in simgr.stashes and len(simgr.found):
             end_state = simgr.found[0]
             run_environ["type"] = end_state.globals["type"]
